@@ -10,10 +10,12 @@ from matplotlib import pyplot as plt
 from PIL import Image, ImageDraw, ImageFont
 from streamlit_webrtc import webrtc_streamer
 
-model = torch.hub.load("ultralytics/yolov5", "yolov5s", pretrained=True)
+# モデルの読み込み
+yolov5n = torch.hub.load("ultralytics/yolov5", "yolov5n", pretrained=True)
+yolov5s = torch.hub.load("ultralytics/yolov5", "yolov5s", pretrained=True)
 truetype_url = "https://github.com/JotJunior/PHP-Boleto-ZF2/blob/master/public/assets/fonts/arial.ttf?raw=true"
 r = requests.get(truetype_url, allow_redirects=True)
-classes = list(model.model.names.values())
+classes = list(yolov5n.model.names.values())
 
 
 def object_detection(image: Image) -> Image:
@@ -21,7 +23,6 @@ def object_detection(image: Image) -> Image:
     pred = model(image)
     # 色の一覧を作成
     cmap = plt.get_cmap("hsv", len(model.model.names))
-
     # フォントサイズ設定
     sqrt = math.sqrt(image.size[0] * image.size[1] / 10000)
     size = int(sqrt * 5)
@@ -71,6 +72,8 @@ st.sidebar.markdown(f"データセットに含まれるクラス一覧:\n{classe
 
 # メイン画面表示
 st.title("Real-time object detection")
+model_name = st.selectbox("Model", ["yolov5n", "yolov5s"])
+model = yolov5n if model_name == "yolov5n" else yolov5s
 threshold = st.slider("Confidence threshold", 0.0, 1.0, 0.25, 0.01)
 
 webrtc_streamer(
